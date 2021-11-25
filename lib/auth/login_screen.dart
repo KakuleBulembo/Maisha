@@ -43,110 +43,112 @@ class _LoginScreenState extends State<LoginScreen> {
         valueColor: AlwaysStoppedAnimation(Colors.purple),
       ),
       child: Background(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                  "LOGIN",
-                style: TextStyle(
-                  color: kPrimaryColor,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text(
+                    "LOGIN",
+                  style: TextStyle(
+                    color: kPrimaryColor,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              SizedBox(
+                SizedBox(
+                    height: size.height * 0.03,
+                ),
+                SvgPicture.asset(
+                    'assets/icons/login.svg',
+                  height: size.height * 0.3,
+                ),
+                SizedBox(
                   height: size.height * 0.03,
-              ),
-              SvgPicture.asset(
-                  'assets/icons/login.svg',
-                height: size.height * 0.3,
-              ),
-              SizedBox(
-                height: size.height * 0.03,
-              ),
-              RoundedTextFormField(
-                icon: Icons.email,
-                hintText: 'Your Email',
-                onChanged: (value){
-                  email = value;
-                },
-              ),
-              RoundedPasswordField(
-                hintText: 'Password',
-                obscureText: vuePass,
-                onTap: (){
-                  setState(() {
-                    if(vuePass == true){
-                      vuePass = false;
-                    }
-                    else{
-                      vuePass = true;
-                    }
-                  });
-                },
-                onChanged: (value){
-                  password = value;
-                },
-              ),
-              SizedBox(
-                height: size.height * 0.03,
-              ),
-              RoundedButton(
-                  label: 'Login',
-                  onPressed: () async{
+                ),
+                RoundedTextFormField(
+                  icon: Icons.email,
+                  hintText: 'Your Email',
+                  onChanged: (value){
+                    email = value;
+                  },
+                ),
+                RoundedPasswordField(
+                  hintText: 'Password',
+                  obscureText: vuePass,
+                  onTap: (){
                     setState(() {
-                      showSpinner = true;
-                    });
-                    try{
-                      await _auth.signInWithEmailAndPassword(
-                          email: email,
-                          password: password,
-                      ).then((value) {
-                        setState(() {
-                          showSpinner = false;
-                        });
-                      });
-                      User? currentUser = _auth.currentUser;
-                      final DocumentSnapshot snap = await FirebaseFirestore.instance
-                          .collection('users').doc(currentUser!.uid).get();
-                      role = snap['role'];
-                      if(role == 'Admin'){
-                        setState(() {
-                          showSpinner = false;
-                        });
-                        Navigator.pushNamed(context, DashboardScreen.id);
-                      }
-                      else if(role == 'Therapist'){
-                        setState(() {
-                          showSpinner = false;
-                        });
-                        Navigator.pushNamed(context, DashboardTherapistScreen.id);
+                      if(vuePass == true){
+                        vuePass = false;
                       }
                       else{
+                        vuePass = true;
+                      }
+                    });
+                  },
+                  onChanged: (value){
+                    password = value;
+                  },
+                ),
+                SizedBox(
+                  height: size.height * 0.03,
+                ),
+                RoundedButton(
+                    label: 'Login',
+                    onPressed: () async{
+                      setState(() {
+                        showSpinner = true;
+                      });
+                      try{
+                        await _auth.signInWithEmailAndPassword(
+                            email: email,
+                            password: password,
+                        ).then((value) {
+                          setState(() {
+                            showSpinner = false;
+                          });
+                        });
+                        User? currentUser = _auth.currentUser;
+                        final DocumentSnapshot snap = await FirebaseFirestore.instance
+                            .collection('users').doc(currentUser!.uid).get();
+                        role = snap['role'];
+                        if(role == 'Admin'){
+                          setState(() {
+                            showSpinner = false;
+                          });
+                          Navigator.pushNamed(context, DashboardScreen.id);
+                        }
+                        else if(role == 'Therapist'){
+                          setState(() {
+                            showSpinner = false;
+                          });
+                          Navigator.pushNamed(context, DashboardTherapistScreen.id);
+                        }
+                        else{
+                          setState(() {
+                            showSpinner = false;
+                          });
+                          Navigator.pushNamed(context, DashboardUserScreen.id);
+                        }
+                      }
+                      catch(e){
+                        showToast(message: 'Wrong credentials', color: Colors.red);
                         setState(() {
                           showSpinner = false;
                         });
-                        Navigator.pushNamed(context, DashboardUserScreen.id);
                       }
-                    }
-                    catch(e){
-                      showToast(message: 'Wrong credentials', color: Colors.red);
-                      setState(() {
-                        showSpinner = false;
-                      });
-                    }
+                    },
+                    color: kPrimaryColor,
+                ),
+                SizedBox(
+                  height: size.height * 0.03,
+                ),
+                AlreadyHaveAnAccountCheck(
+                  onTap: (){
+                    Navigator.pushNamed(context, RegisterScreen.id);
                   },
-                  color: kPrimaryColor,
-              ),
-              SizedBox(
-                height: size.height * 0.03,
-              ),
-              AlreadyHaveAnAccountCheck(
-                onTap: (){
-                  Navigator.pushNamed(context, RegisterScreen.id);
-                },
-              )
-            ],
+                )
+              ],
+            ),
           )
       ),
     );

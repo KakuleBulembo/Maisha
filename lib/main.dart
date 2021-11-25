@@ -4,6 +4,7 @@ import 'package:maisha/admin/create_therapist.dart';
 import 'package:maisha/admin/dashboard_screen.dart';
 import 'package:maisha/auth/login_screen.dart';
 import 'package:maisha/auth/register_screen.dart';
+import 'package:maisha/therapist/create_post_form.dart';
 import 'package:maisha/therapist/dashboard_therapist_screen.dart';
 import 'package:maisha/users/dashboard_user_screen.dart';
 import 'package:maisha/welcome_screen.dart';
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
         DashboardUserScreen.id : (context) => const DashboardUserScreen(),
         DashboardTherapistScreen.id : (context) => const DashboardTherapistScreen(),
         CreateTherapist.id : (context) => const CreateTherapist(),
+        CreatePostForm.id : (context) => const CreatePostForm(),
       },
     );
   }
