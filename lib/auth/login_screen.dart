@@ -135,6 +135,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         setState(() {
                           showSpinner = false;
                         });
+                        print(e);
                       }
                     },
                     color: kPrimaryColor,

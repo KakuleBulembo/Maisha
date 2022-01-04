@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 class PostInputField extends StatelessWidget {
   const PostInputField({
     Key? key,
+    this.initialValue = '',
     required this.label,
     required this.hintText,
     required this.maxLines,
@@ -15,6 +16,7 @@ class PostInputField extends StatelessWidget {
   final int maxLines;
   final int minLines;
   final ValueChanged<String> onChanged;
+  final String initialValue;
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +56,7 @@ class PostInputField extends StatelessWidget {
               color: Colors.purple,
             ),
             TextFormField(
+              initialValue: initialValue,
               textAlign: TextAlign.center,
               cursorColor: Colors.purple,
               style: const TextStyle(

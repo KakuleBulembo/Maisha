@@ -23,6 +23,7 @@ class _CreatePostFormState extends State<CreatePostForm> {
   String ? title;
   String ? body;
   bool showSpinner = false;
+  String ? selectedType;
 
   CupertinoPicker iOSPicker() {
     List<Text> pickerItems = [];
@@ -102,13 +103,15 @@ class _CreatePostFormState extends State<CreatePostForm> {
                  onPressed: () async{
                    setState(() {
                      showSpinner = true;
+                     selectedType = type;
                    });
                    User ? currentUser = FirebaseAuth.instance.currentUser;
-                   await FirebaseFirestore.instance.collection('posts').doc(currentUser!.uid).set({
-                     'uid' : currentUser.uid,
+                   await FirebaseFirestore.instance.collection('posts').doc().set({
+                     'uid' : currentUser!.uid,
                      'title' : title,
                      'body' : body,
-                     'type' : type,
+                     'totalLikes' : 0,
+                     'type' : selectedType,
                      'ts' : DateTime.now(),
                    }).then((value) {
                      showToast(
