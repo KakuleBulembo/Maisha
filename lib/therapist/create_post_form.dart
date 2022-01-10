@@ -34,12 +34,13 @@ class _CreatePostFormState extends State<CreatePostForm> {
         itemExtent: 32,
         onSelectedItemChanged: (selectedIndex){
           setState(() {
-            type = postType[selectedIndex];
+            type = selectedIndex > 0 ? postType[selectedIndex] : null;
           });
         },
         children: pickerItems
     );
   }
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -64,86 +65,111 @@ class _CreatePostFormState extends State<CreatePostForm> {
         ),
         body: Padding(
           padding: const EdgeInsets.only(top: 40),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            // crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              PostInputField(
-                label: 'Title*',
-                hintText: 'Enter Title',
-                maxLines: 1,
-                minLines: 1,
-                onChanged: (value){
-                  title = value;
-                },
-              ),
-
-              GestureDetector(
-                onTap:  () {
-                  FocusScopeNode currentFocus = FocusScope.of(context);
-
-                  if (!currentFocus.hasPrimaryFocus &&
-                      currentFocus.focusedChild != null) {
-                    FocusManager.instance.primaryFocus!.unfocus();
-                  }
-                },
-                child: PostInputField(
-                    label: 'Body*',
-                    hintText: 'Enter Body',
-                    maxLines: 7,
-                    minLines: 4,
-                    onChanged: (value){
-                      body = value;
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              // crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                PostInputField(
+                  validator: (value){
+                    if(value == null || value.isEmpty){
+                      return 'Please enter the title';
                     }
+                    return null;
+                  },
+                  label: 'Title*',
+                  hintText: 'Enter Title',
+                  maxLines: 1,
+                  minLines: 1,
+                  onChanged: (value){
+                    title = value;
+                  },
                 ),
-              ),
-             RoundedButton(
-                 label: 'Create Post',
-                 color: Colors.purple,
-                 onPressed: () async{
-                   setState(() {
-                     showSpinner = true;
-                     selectedType = type;
-                   });
-                   User ? currentUser = FirebaseAuth.instance.currentUser;
-                   await FirebaseFirestore.instance.collection('posts').doc().set({
-                     'uid' : currentUser!.uid,
-                     'title' : title,
-                     'body' : body,
-                     'totalLikes' : 0,
-                     'type' : selectedType,
-                     'ts' : DateTime.now(),
-                   }).then((value) {
-                     showToast(
-                         message: 'Post added successfully',
-                         color: Colors.green,
-                     );
-                     Navigator.pop(context);
-                     setState(() {
-                       showSpinner = false;
-                     });
-                   });
-                 }
-             ),
-             Container(
-               height: 150,
-               alignment: Alignment.center,
-               padding: const EdgeInsets.only(bottom: 30),
-               color: Colors.purple,
-               child: CupertinoTheme(
-                 data:const CupertinoThemeData(
-                   textTheme: CupertinoTextThemeData(
-                     pickerTextStyle: TextStyle(
-                       color: kPrimaryLightColor,
-                       fontSize: 20,
-                       fontWeight: FontWeight.bold
-                     )
-                   )
-                 ),
-                   child: iOSPicker(),
+
+                GestureDetector(
+                  onTap:  () {
+                    FocusScopeNode currentFocus = FocusScope.of(context);
+
+                    if (!currentFocus.hasPrimaryFocus &&
+                        currentFocus.focusedChild != null) {
+                      FocusManager.instance.primaryFocus!.unfocus();
+                    }
+                  },
+                  child: PostInputField(
+                    validator: (value){
+                      if(value == null || value.isEmpty){
+                        return 'Please enter the body';
+                      }
+                      return null;
+                    },
+                      label: 'Body*',
+                      hintText: 'Enter Body',
+                      maxLines: 7,
+                      minLines: 4,
+                      onChanged: (value){
+                        body = value;
+                      }
+                  ),
+                ),
+               RoundedButton(
+                   label: 'Create Post',
+                   color: Colors.purple,
+                   onPressed: () async{
+                     if(_formKey.currentState!.validate()){
+                       if(type != null){
+                         setState(() {
+                           showSpinner = true;
+                           selectedType = type;
+                         });
+                         User ? currentUser = FirebaseAuth.instance.currentUser;
+                         await FirebaseFirestore.instance.collection('posts').doc().set({
+                           'uid' : currentUser!.uid,
+                           'title' : title,
+                           'body' : body,
+                           'totalLikes' : 0,
+                           'type' : selectedType,
+                           'ts' : DateTime.now(),
+                         }).then((value) {
+                           showToast(
+                             message: 'Post added successfully',
+                             color: Colors.green,
+                           );
+                           Navigator.pop(context);
+                           setState(() {
+                             showSpinner = false;
+                           });
+                         });
+                       }
+                       else{
+                         showToast(
+                             message: 'Please Select a type',
+                             color: Colors.red
+                         );
+                       }
+                     }
+                   }
                ),
-             ),
-            ],
+               Container(
+                 height: 150,
+                 alignment: Alignment.center,
+                 padding: const EdgeInsets.only(bottom: 30),
+                 color: Colors.purple,
+                 child: CupertinoTheme(
+                   data:const CupertinoThemeData(
+                     textTheme: CupertinoTextThemeData(
+                       pickerTextStyle: TextStyle(
+                         color: kPrimaryLightColor,
+                         fontSize: 20,
+                         fontWeight: FontWeight.bold
+                       )
+                     )
+                   ),
+                     child: iOSPicker(),
+                 ),
+               ),
+              ],
+            ),
           ),
         ),
       ),

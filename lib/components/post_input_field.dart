@@ -10,6 +10,7 @@ class PostInputField extends StatelessWidget {
     required this.maxLines,
     required this.minLines,
     required this.onChanged,
+    required this.validator,
   }) : super(key: key);
   final String label;
   final String hintText;
@@ -17,6 +18,7 @@ class PostInputField extends StatelessWidget {
   final int minLines;
   final ValueChanged<String> onChanged;
   final String initialValue;
+  final dynamic validator;
 
   @override
   Widget build(BuildContext context) {
@@ -56,17 +58,18 @@ class PostInputField extends StatelessWidget {
               color: Colors.purple,
             ),
             TextFormField(
+              validator: validator,
               initialValue: initialValue,
               textAlign: TextAlign.center,
               cursorColor: Colors.purple,
               style: const TextStyle(
-                color: Colors.purple,
-                fontWeight: FontWeight.bold,
+                color: Colors.black,
+                fontSize: 25,
               ),
               decoration: InputDecoration(
                 hintText: hintText,
                 hintStyle: TextStyle(
-                  color: Colors.purple.withOpacity(0.5),
+                  color: Colors.black.withOpacity(0.5),
                 ),
               ),
               maxLines: maxLines,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AddButton extends StatelessWidget {
   const AddButton({
@@ -14,11 +15,16 @@ class AddButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
           title,
-          style: Theme.of(context).textTheme.headline6!.copyWith(color: Colors.purple),
+          style: GoogleFonts.acme(
+              textStyle:const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              )
+          ),
         ),
         ButtonBlue(onPressed: onPressed, addLabel: addLabel, color: Colors.purple, icon:const Icon(Icons.add),),
       ],

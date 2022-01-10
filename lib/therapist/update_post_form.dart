@@ -40,6 +40,7 @@ class _UpdatePostFormState extends State<UpdatePostForm> {
         children: pickerItems
     );
   }
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -70,108 +71,133 @@ class _UpdatePostFormState extends State<UpdatePostForm> {
                 builder: (context,AsyncSnapshot snapshot){
                    if(snapshot.hasData){
                      final posts = snapshot.data!.data();
-                     return Column(
-                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                       children: [
-                         PostInputField(
-                           initialValue: posts['title'],
-                             label: 'Title*',
-                             hintText: 'Enter Title',
-                             maxLines: 1,
-                             minLines: 1,
-                             onChanged: (value){
-                               title = value;
-                             }
-                         ),
-                         GestureDetector(
-                           onTap:  () {
-                             FocusScopeNode currentFocus = FocusScope.of(context);
-
-                             if (!currentFocus.hasPrimaryFocus &&
-                                 currentFocus.focusedChild != null) {
-                               FocusManager.instance.primaryFocus!.unfocus();
-                             }
-                           },
-                           child: PostInputField(
-                             initialValue: posts['body'],
-                               label: 'Body*',
-                               hintText: 'Enter Body',
-                               maxLines: 7,
-                               minLines: 4,
+                     return Form(
+                       key: _formKey,
+                       child: Column(
+                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                         children: [
+                           PostInputField(
+                             validator: (value){
+                               if(value == null || value.isEmpty){
+                                 return 'Please enter the title';
+                               }
+                               return null;
+                             },
+                             initialValue: posts['title'],
+                               label: 'Title*',
+                               hintText: 'Enter Title',
+                               maxLines: 1,
+                               minLines: 1,
                                onChanged: (value){
-                                 body = value;
+                                 title = value;
                                }
                            ),
-                         ),
-                        Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              RoundedViewDetailsButton(
-                                title: 'Upload',
-                                color: Colors.purple.withOpacity(0.7),
-                                onPressed: () async{
-                                  setState(() {
-                                    showSpinner = true;
-                                  });
-                                  await FirebaseFirestore.instance.collection('posts').doc(widget.post.reference.id).update({
-                                    'title' : title,
-                                    'body' : body,
-                                    'type' : type,
-                                    'ts' : DateTime.now(),
-                                  }).then((value) {
-                                    setState(() {
-                                      showSpinner = false;
-                                    });
-                                    Navigator.pop(context);
-                                  });
-                                },
-                              ),
-                              RoundedViewDetailsButton(
-                                title: 'Delete',
-                                color: kPrimaryColor,
-                                onPressed: () async{
-                                  setState(() {
-                                    showSpinner = true;
-                                  });
-                                   await FirebaseFirestore.instance.runTransaction((Transaction myTransaction) async{
-                                     myTransaction.delete(widget.post.reference);
-                                   }).then((value) {
-                                     setState(() {
-                                       showSpinner = false;
-                                     });
-                                     showToast(
-                                         message: 'Post Deleted Successfully',
-                                         color: Colors.green,
-                                     );
-                                     Navigator.pop(context);
-                                   });
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                         Container(
-                           height: 150,
-                           width: MediaQuery.of(context).size.width,
-                           alignment: Alignment.center,
-                           padding: const EdgeInsets.only(bottom: 30),
-                           color: Colors.purple,
-                           child: CupertinoTheme(
-                             data:const CupertinoThemeData(
-                                 textTheme: CupertinoTextThemeData(
-                                     pickerTextStyle: TextStyle(
-                                         color: kPrimaryLightColor,
-                                         fontSize: 20,
-                                         fontWeight: FontWeight.bold
-                                     )
-                                 )
+                           GestureDetector(
+                             onTap:  () {
+                               FocusScopeNode currentFocus = FocusScope.of(context);
+
+                               if (!currentFocus.hasPrimaryFocus &&
+                                   currentFocus.focusedChild != null) {
+                                 FocusManager.instance.primaryFocus!.unfocus();
+                               }
+                             },
+                             child: PostInputField(
+                               validator: (value){
+                                 if(value == null || value.isEmpty){
+                                   return 'Please enter the body';
+                                 }
+                                 return null;
+                               },
+                               initialValue: posts['body'],
+                                 label: 'Body*',
+                                 hintText: 'Enter Body',
+                                 maxLines: 7,
+                                 minLines: 4,
+                                 onChanged: (value){
+                                   body = value;
+                                 }
                              ),
-                             child: iOSPicker(),
                            ),
-                         ),
-                       ],
+                          Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                RoundedViewDetailsButton(
+                                  title: 'Upload',
+                                  color: Colors.purple.withOpacity(0.7),
+                                  onPressed: () async{
+                                    if(_formKey.currentState!.validate()){
+                                      if(type != null){
+                                        setState(() {
+                                          showSpinner = true;
+                                        });
+                                        await FirebaseFirestore.instance.collection('posts').doc(widget.post.reference.id).update({
+                                          'title' : title,
+                                          'body' : body,
+                                          'type' : type,
+                                          'ts' : DateTime.now(),
+                                        }).then((value) {
+                                          setState(() {
+                                            showSpinner = false;
+                                          });
+                                          Navigator.pop(context);
+                                        });
+                                      }
+                                      else{
+                                        showToast(
+                                            message: 'Please Select a type',
+                                            color: Colors.red
+                                        );
+                                      }
+                                    }
+                                  },
+                                ),
+                                RoundedViewDetailsButton(
+                                  title: 'Delete',
+                                  color: kPrimaryColor,
+                                  onPressed: () async{
+                                    setState(() {
+                                      showSpinner = true;
+                                    });
+                                     await FirebaseFirestore.instance.runTransaction((Transaction myTransaction) async{
+                                       myTransaction.delete(widget.post.reference);
+                                     }).then((value) {
+                                       setState(() {
+                                         showSpinner = false;
+                                       });
+                                       showToast(
+                                           message: 'Post Deleted Successfully',
+                                           color: Colors.green,
+                                       );
+                                       Navigator.pop(context);
+                                     });
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                           Container(
+                             height: 150,
+                             width: MediaQuery.of(context).size.width,
+                             alignment: Alignment.center,
+                             padding: const EdgeInsets.only(bottom: 30),
+                             color: Colors.purple,
+                             child: CupertinoTheme(
+                               data:const CupertinoThemeData(
+                                   textTheme: CupertinoTextThemeData(
+                                       pickerTextStyle: TextStyle(
+                                           color: kPrimaryLightColor,
+                                           fontSize: 20,
+                                           fontWeight: FontWeight.bold
+                                       )
+                                   )
+                               ),
+                               child: iOSPicker(),
+                             ),
+                           ),
+                         ],
+                       ),
                      );
                    }
                    else{
