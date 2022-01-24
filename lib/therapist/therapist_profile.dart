@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:maisha/therapist/update_post_form.dart';
 import 'package:readmore/readmore.dart';
 
@@ -171,9 +172,18 @@ class _TherapistProfileState extends State<TherapistProfile> {
                   ),
                 );
               }
-              else{
-                return Container();
-              }
+              return Center(
+                child: Text(
+                  'No Post',
+                  style: GoogleFonts.acme(
+                      textStyle:const TextStyle(
+                          color: Colors.grey,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 30
+                      )
+                  ),
+                ),
+              );
             }
         ),
       ],

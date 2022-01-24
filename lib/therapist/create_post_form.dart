@@ -128,6 +128,7 @@ class _CreatePostFormState extends State<CreatePostForm> {
                            'title' : title,
                            'body' : body,
                            'totalLikes' : 0,
+                           'likedBy' : {},
                            'type' : selectedType,
                            'ts' : DateTime.now(),
                          }).then((value) {

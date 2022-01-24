@@ -9,11 +9,13 @@ class RoundedPasswordField extends StatefulWidget {
     required this.hintText,
     required this.onTap,
     this.obscureText = true,
+    required this.validator,
     required this.onChanged,
   }) : super(key: key);
   final String hintText;
   final VoidCallback onTap;
   final bool obscureText;
+  final dynamic validator;
   final ValueChanged<String> onChanged;
 
   @override
@@ -25,6 +27,7 @@ class _RoundedPasswordFieldState extends State<RoundedPasswordField> {
   Widget build(BuildContext context) {
     return TextFormFieldContainer(
       child: TextFormField(
+        validator: widget.validator,
         obscureText: widget.obscureText,
         decoration: InputDecoration(
           hintText: widget.hintText,

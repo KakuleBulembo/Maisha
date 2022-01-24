@@ -1,10 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:maisha/components/chat_screen.dart';
+import 'package:maisha/components/favorites.dart';
 import 'package:maisha/components/top_button.dart';
 import 'package:maisha/constant.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:maisha/users/favorites.dart';
 import 'package:maisha/users/profile.dart';
 import 'package:maisha/users/search_engine.dart';
+import 'package:maisha/users/therapist_request.dart';
 import 'package:maisha/users/user_home.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
 
@@ -55,12 +59,7 @@ class _DashboardUserScreenState extends State<DashboardUserScreen> {
                 right: 20,
                 bottom: 10,
               ),
-              child: TopButton(
-                  title: 'Posts',
-                  addLabel: 'Session',
-                  onPressed: (){
-                  }
-              ),
+              child: buildWidget(context),
             ),
             const SizedBox(
               height: 10,
@@ -108,11 +107,6 @@ class _DashboardUserScreenState extends State<DashboardUserScreen> {
               selectedColor: Colors.pink,
             ),
             SalomonBottomBarItem(
-              icon:const Icon(Icons.search),
-              title:const Text('Search'),
-              selectedColor: Colors.orange,
-            ),
-            SalomonBottomBarItem(
               icon:const Icon(Icons.person),
               title:const Text('Profile'),
               selectedColor: Colors.teal,
@@ -120,6 +114,60 @@ class _DashboardUserScreenState extends State<DashboardUserScreen> {
           ],
         ),
       ),
+    );
+  }
+  Widget buildWidget(BuildContext context){
+    return StreamBuilder(
+        stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(FirebaseAuth.instance.currentUser!.uid)
+                  .snapshots(),
+        builder: (context, AsyncSnapshot snapshot){
+          if(snapshot.hasData){
+            var user = snapshot.data.data();
+            if(user != null){
+              if(user['session'] == true){
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Posts',
+                      style: GoogleFonts.acme(
+                        textStyle:const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: (){
+                        Navigator.push(context, MaterialPageRoute(builder: (context){
+                          return const ChatScreen();
+                        }));
+                      },
+                      icon:const Icon(
+                        IconData(0xe571, fontFamily: 'MaterialIcons', matchTextDirection: true),
+                        color: kPrimaryColor,
+                        size: 35,
+                      ),
+                    ),
+                  ],
+                );
+              }
+              else {
+                return TopButton(
+                    title: 'Posts',
+                    addLabel: 'Session',
+                    onPressed: (){
+                      Navigator.pushNamed(context, TherapistRequest.id);
+                    }
+                );
+              }
+            }
+            return Container();
+          }
+          return Container();
+        }
     );
   }
 }

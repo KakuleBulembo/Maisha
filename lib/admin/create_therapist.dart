@@ -25,6 +25,7 @@ class _CreateTherapistState extends State<CreateTherapist> {
   bool vuePass = true;
   bool showSpinner = false;
   final _auth = FirebaseAuth.instance;
+  final _formKey = GlobalKey<FormState>();
 
 
   @override
@@ -45,69 +46,93 @@ class _CreateTherapistState extends State<CreateTherapist> {
           ),
           backgroundColor: kPrimaryColor,
         ),
-        body: SingleChildScrollView(
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SvgPicture.asset(
-                  'assets/icons/signup.svg',
-                  height: size.height * 0.3,
-                ),
-                SizedBox(
-                  height: size.height * 0.03,
-                ),
-                RoundedTextFormField(
-                    hintText: 'Therapist Username',
-                    icon: Icons.person,
-                    onChanged: (value){
-                      username = value;
-                    }
-                ),
-                RoundedTextFormField(
-                    hintText: 'Therapist Email',
-                    icon: Icons.email,
-                    onChanged: (value){
-                      email = value;
-                    }
-                ),
-                SizedBox(
-                  height: size.height * 0.03,
-                ),
-                RoundedButton(
-                  label: 'Add Therapist',
-                  color: kPrimaryColor,
-                  onPressed: () async{
-                    setState(() {
-                      showSpinner = true;
-                    });
-                    await _auth.createUserWithEmailAndPassword(
-                      email: email,
-                      password: password,
-                    ).then((value) async{
-                      User? currentUser = FirebaseAuth.instance.currentUser;
-                      await FirebaseFirestore.instance.collection('users').doc(currentUser!.uid).set({
-                        'uid' : currentUser.uid,
-                        'username' : username,
-                        'email' : currentUser.email,
-                        'role' : role,
-                        'ts' : DateTime.now(),
-                      });
-                    }).then((value) {
-                      setState(() {
-                        showSpinner = false;
-                      });
-                    }).then((value) {
-                      Navigator.pop(context);
-                      showToast(
-                        message: 'You have created a therapist. Please login',
-                        color: Colors.green,
-                      );
-                    });
-
-                  },
-                ),
-              ],
+        body: Form(
+          key: _formKey,
+          child: SingleChildScrollView(
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  SvgPicture.asset(
+                    'assets/icons/signup.svg',
+                    height: size.height * 0.3,
+                  ),
+                  SizedBox(
+                    height: size.height * 0.03,
+                  ),
+                  RoundedTextFormField(
+                      hintText: 'Therapist Username',
+                      icon: Icons.person,
+                      onChanged: (value){
+                        username = value;
+                      },
+                    validator: (value){
+                      if(value == null || value.isEmpty){
+                        return 'Please enter the username';
+                      }
+                      return null;
+                    },
+                  ),
+                  RoundedTextFormField(
+                      hintText: 'Therapist Email',
+                      icon: Icons.email,
+                      onChanged: (value){
+                        email = value;
+                      },
+                    validator: (value){
+                      if(value == null || value.isEmpty){
+                        return 'Please enter the email';
+                      }
+                      else{
+                        if(RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value)){
+                          return null;
+                        }
+                        else{
+                          return 'Enter a valid email';
+                        }
+                      }
+                    },
+                  ),
+                  SizedBox(
+                    height: size.height * 0.03,
+                  ),
+                  RoundedButton(
+                    label: 'Add Therapist',
+                    color: kPrimaryColor,
+                    onPressed: () async{
+                      if(_formKey.currentState!.validate()){
+                        setState(() {
+                          showSpinner = true;
+                        });
+                        await _auth.createUserWithEmailAndPassword(
+                          email: email,
+                          password: password,
+                        ).then((value) async{
+                          User? currentUser = FirebaseAuth.instance.currentUser;
+                          await FirebaseFirestore.instance.collection('users').doc(currentUser!.uid).set({
+                            'uid' : currentUser.uid,
+                            'username' : username,
+                            'email' : currentUser.email,
+                            'role' : role,
+                            'session' : {},
+                            'ts' : DateTime.now(),
+                          });
+                        }).then((value) {
+                          setState(() {
+                            showSpinner = false;
+                          });
+                        }).then((value) {
+                          Navigator.pop(context);
+                          showToast(
+                            message: 'You have created a therapist. Please login',
+                            color: Colors.green,
+                          );
+                        });
+                      }
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),

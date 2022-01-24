@@ -5,12 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:maisha/auth/login_screen.dart';
 import 'package:maisha/components/add_button.dart';
+import 'package:maisha/components/favorites.dart';
 import 'package:maisha/therapist/create_post_form.dart';
+import 'package:maisha/therapist/messages.dart';
+import 'package:maisha/therapist/notification_builder.dart';
 import 'package:maisha/therapist/therapist_profile.dart';
 import 'package:maisha/users/search_engine.dart';
 import 'package:maisha/users/user_home.dart';
 import 'package:salomon_bottom_bar/salomon_bottom_bar.dart';
-
 import '../constant.dart';
 
 class DashboardTherapistScreen extends StatefulWidget {
@@ -22,11 +24,6 @@ class DashboardTherapistScreen extends StatefulWidget {
 }
 
 class _DashboardTherapistScreenState extends State<DashboardTherapistScreen> {
-  final Stream<QuerySnapshot> posts = FirebaseFirestore
-      .instance.collection('posts')
-      .where('uid', isEqualTo: FirebaseAuth.instance.currentUser!.uid.toString())
-      .orderBy('ts', descending: true)
-      .snapshots();
   String ? authorID;
   int index = 0;
   final _auth = FirebaseAuth.instance;
@@ -62,12 +59,24 @@ class _DashboardTherapistScreenState extends State<DashboardTherapistScreen> {
                       IconData(0xe3b3, fontFamily: 'MaterialIcons'),
                       color: Colors.white,
                       size: 35,
-                    )
-                )
+                    ),
+                ),
               ],
-            )
+            ),
           ],
         ),
+        actions: [
+          IconButton(
+            onPressed: (){
+              Navigator.pushNamed(context, Messages.id);
+            },
+            icon: const Icon(
+              IconData(0xe571, fontFamily: 'MaterialIcons', matchTextDirection: true),
+              color: Colors.white,
+              size: 35,
+            ),
+          ),
+        ],
         backgroundColor: kPrimaryColor.withOpacity(0.9),
       ),
       body: Padding(
@@ -79,18 +88,6 @@ class _DashboardTherapistScreenState extends State<DashboardTherapistScreen> {
           children: [
             Column(
               children: [
-                const Text(
-                  'Therapist Dashboard',
-                  style: TextStyle(
-                    color: kPrimaryColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 30,
-                  ),
-                ),
-                const Divider(
-                  height: 10,
-                  color: kPrimaryColor,
-                ),
                 Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: AddButton(
@@ -115,7 +112,7 @@ class _DashboardTherapistScreenState extends State<DashboardTherapistScreen> {
             if(index == 0)
               const UserHome(),
             if(index == 1)
-              const SearchEngine(),
+              const NotificationBuilder(),
             if(index == 2)
               const TherapistProfile(),
           ],
@@ -139,9 +136,9 @@ class _DashboardTherapistScreenState extends State<DashboardTherapistScreen> {
               selectedColor: Colors.purple,
             ),
             SalomonBottomBarItem(
-              icon:const Icon(Icons.search),
-              title:const Text('Search'),
-              selectedColor: Colors.orange,
+                icon:const Icon(Icons.notifications),
+                title:const Text('Notification'),
+              selectedColor: Colors.blue,
             ),
             SalomonBottomBarItem(
               icon:const Icon(Icons.person),

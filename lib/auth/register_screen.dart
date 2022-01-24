@@ -29,6 +29,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool vuePass = true;
   bool showSpinner = false;
   final _auth = FirebaseAuth.instance;
+  String therapist = '';
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -42,99 +44,136 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
       child: Background(
           child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('REGISTER', style: TextStyle(
-                    color: kPrimaryColor,
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.bold),
-                ),
-                SizedBox(
-                  height: size.height * 0.01,
-                ),
-                SvgPicture.asset(
-                    'assets/icons/signup.svg',
-                  height: size.height * 0.3,
-                ),
-                SizedBox(
-                  height: size.height * 0.03,
-                ),
-                RoundedTextFormField(
-                    hintText: 'Your Username',
-                    icon: Icons.person,
-                    onChanged: (value){
-                       username = value;
-                    }
-                ),
-                RoundedTextFormField(
-                    hintText: 'Your Email',
-                    icon: Icons.email,
-                    onChanged: (value){
-                      email = value;
-                    }
-                ),
-                RoundedPasswordField(
-                    hintText: 'Password',
-                    obscureText: vuePass,
-                    onTap: (){
-                      setState(() {
-                        if(vuePass == true){
-                          vuePass = false;
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('REGISTER', style: TextStyle(
+                      color: kPrimaryColor,
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(
+                    height: size.height * 0.01,
+                  ),
+                  SvgPicture.asset(
+                      'assets/icons/signup.svg',
+                    height: size.height * 0.3,
+                  ),
+                  SizedBox(
+                    height: size.height * 0.03,
+                  ),
+                  RoundedTextFormField(
+                      hintText: 'Your Username',
+                      icon: Icons.person,
+                      onChanged: (value){
+                         username = value;
+                      },
+                      validator: (value){
+                        if(value == null || value.isEmpty){
+                          return 'Please enter the username';
+                        }
+                        return null;
+                        },
+                  ),
+                  RoundedTextFormField(
+                      validator: (value){
+                        if(value == null || value.isEmpty){
+                          return 'Please enter the email';
                         }
                         else{
-                          vuePass = true;
+                          if(RegExp(r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+").hasMatch(value)){
+                            return null;
+                          }
+                          else{
+                            return 'Enter a valid email';
+                          }
                         }
-                      });
+                      },
+                      hintText: 'Your Email',
+                      icon: Icons.email,
+                      onChanged: (value){
+                        email = value;
+                      }
+                  ),
+                  RoundedPasswordField(
+                    validator: (value){
+                      if(value == null || value.isEmpty){
+                        return 'Please enter the password';
+                      }
+                      else{
+                        if(value.length < 6){
+                          return 'Minimum 6 characters';
+                        }
+                        return null;
+                      }
                     },
-                  onChanged: (value){
-                      password = value;
-                  },
-                ),
-                SizedBox(
-                  height: size.height * 0.03,
-                ),
-                RoundedButton(
-                    label: 'Register',
-                    color: kPrimaryColor,
-                  onPressed: () async{
-                      await _auth.createUserWithEmailAndPassword(
-                          email: email,
-                          password: password,
-                      ).then((value) async{
+                      hintText: 'Password',
+                      obscureText: vuePass,
+                      onTap: (){
                         setState(() {
-                          showSpinner = true;
+                          if(vuePass == true){
+                            vuePass = false;
+                          }
+                          else{
+                            vuePass = true;
+                          }
                         });
-                        User? currentUser = FirebaseAuth.instance.currentUser;
-                        await FirebaseFirestore.instance.collection('users').doc(currentUser!.uid).set({
-                          'uid' : currentUser.uid,
-                          'username' : username,
-                          'email' : currentUser.email,
-                          'role' : role,
-                          'ts' : DateTime.now(),
-                        });
-                      }).then((value) {
-                        setState(() {
-                          showSpinner = false;
-                        });
-                      });
-                      Navigator.pushNamed(context, LoginScreen.id);
-                      showToast(
-                        message: 'You have been registered. Please login',
-                        color: Colors.green,
-                      );
-                  },
-                ),
-                SizedBox(
-                  height: size.height * 0.03,
-                ),
-                AlreadyHaveAnAccountCheck(
-                  login: false,
-                    onTap: (){
-                    Navigator.popAndPushNamed(context, LoginScreen.id);
-                    }
-                ),
-              ],
+                      },
+                    onChanged: (value){
+                        password = value;
+                    },
+                  ),
+                  SizedBox(
+                    height: size.height * 0.03,
+                  ),
+                  RoundedButton(
+                      label: 'Register',
+                      color: kPrimaryColor,
+                    onPressed: () async{
+                        if(_formKey.currentState!.validate()){
+                          await _auth.createUserWithEmailAndPassword(
+                            email: email,
+                            password: password,
+                          ).then((value) async{
+                            setState(() {
+                              showSpinner = true;
+                            });
+                            User? currentUser = FirebaseAuth.instance.currentUser;
+                            await FirebaseFirestore.instance.collection('users').doc(currentUser!.uid).set({
+                              'uid' : currentUser.uid,
+                              'username' : username,
+                              'email' : currentUser.email,
+                              'session' : false,
+                              'therapist' : null,
+                              'role' : role,
+                              'ts' : DateTime.now(),
+                            });
+                          }).then((value) {
+                            setState(() {
+                              showSpinner = false;
+                            });
+                          });
+                          Navigator.pushNamed(context, LoginScreen.id);
+                          showToast(
+                            message: 'You have been registered. Please login',
+                            color: Colors.green,
+                          );
+                        }
+                    },
+                  ),
+                  SizedBox(
+                    height: size.height * 0.03,
+                  ),
+                  AlreadyHaveAnAccountCheck(
+                    login: false,
+                      onTap: (){
+                      Navigator.popAndPushNamed(context, LoginScreen.id);
+                      }
+                  ),
+                ],
+              ),
             ),
           ),
       ),
